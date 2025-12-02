@@ -1,0 +1,23 @@
+[
+{"type":"header","version":"5.2.2","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"586"},
+{"type":"table","name":"app_promotion","database":"586","data":
+[
+{"id":"1","category_id":"1","slideshow":"1","name":"Banner 1","description":"Nothing to do","banner":"uploads\/photo\/c5\/81\/1761952136588345346.webp","photo":"uploads\/photo\/c5\/81\/1761952136588345346.webp","start_date":"2024-07-01","end_date":"2024-07-24","link":"#","status":"-1","created":"1720261853","updated":"1721498343"},
+{"id":"2","category_id":"0","slideshow":"1","name":"Banner 2","description":"","banner":"uploads\/photo\/3a\/b3\/thiet-bi-dien-gia-dung.webp","photo":"uploads\/photo\/38\/ea\/bn.webp","start_date":"2024-07-17","end_date":"2024-07-31","link":"","status":"-1","created":"1720263232","updated":"1735466770"},
+{"id":"3","category_id":"1","slideshow":"1","name":"km","description":"","banner":"uploads\/photo\/75\/68\/41c81a2b-91ed-4b4e-ba58-44e9aecfef64.webp","photo":"uploads\/photo\/43\/58\/img0390.webp","start_date":"2024-07-21","end_date":"2025-11-27","link":"","status":"-1","created":"1721498457","updated":"1735785964"},
+{"id":"4","category_id":"1","slideshow":"1","name":"dl","description":"","banner":"uploads\/photo\/a4\/e1\/7d8007b6-a2cf-4581-92c8-18f6021cc148.webp","photo":"uploads\/photo\/c1\/42\/landing-hoa-hong-dai-ly.webp","start_date":"2024-07-21","end_date":"2025-07-25","link":"","status":"-1","created":"1721498477","updated":"1735785961"},
+{"id":"5","category_id":"1","slideshow":"1","name":"km7","description":"","banner":"uploads\/photo\/5f\/b0\/b413f3da-ef1c-4509-ab49-78afc7319d26-1.webp","photo":"uploads\/photo\/31\/15\/img0390.webp","start_date":"2024-07-21","end_date":"2025-07-31","link":"","status":"-1","created":"1721498549","updated":"1735785958"},
+{"id":"6","category_id":"1","slideshow":"1","name":"Đại lý đặc biệt","description":"","banner":"uploads\/photo\/2d\/4c\/anhdpvcl.webp","photo":"uploads\/photo\/29\/73\/img0393.webp","start_date":"2024-07-25","end_date":"2025-07-24","link":"","status":"-1","created":"1721880726","updated":"1735467346"},
+{"id":"7","category_id":"0","slideshow":"1","name":"Demo","description":"","banner":"uploads\/photo\/1d\/4e\/anhdpvcl.webp","photo":"uploads\/photo\/1d\/4e\/anhdpvcl.webp","start_date":"2024-12-10","end_date":"2024-12-31","link":"","status":"-1","created":"1735467239","updated":"1735467248"},
+{"id":"8","category_id":"0","slideshow":"1","name":"Demo","description":"","banner":"uploads\/photo\/69\/10\/backicon.webp","photo":null,"start_date":"2024-12-18","end_date":"2024-12-20","link":"","status":"-1","created":"1735467274","updated":"1735467282"},
+{"id":"9","category_id":"1","slideshow":"1","name":"KM","description":"","banner":"uploads\/photo\/40\/37\/2.webp","photo":"uploads\/photo\/82\/10\/dt1.webp","start_date":"2025-01-02","end_date":"2025-01-04","link":"","status":"1","created":"1735785860","updated":"1735974819"},
+{"id":"10","category_id":"1","slideshow":"1","name":"KM2","description":"","banner":"uploads\/photo\/a0\/d9\/1.webp","photo":"uploads\/photo\/dc\/f3\/1.webp","start_date":"2025-01-02","end_date":"2025-01-31","link":"","status":"-1","created":"1735787107","updated":"1736310621"},
+{"id":"11","category_id":"1","slideshow":"1","name":"KM3","description":"","banner":"uploads\/photo\/dc\/45\/3.webp","photo":"uploads\/photo\/bd\/d0\/dt2.webp","start_date":"2025-01-03","end_date":"2025-01-31","link":"","status":"1","created":"1735922393","updated":"1735979413"},
+{"id":"12","category_id":"1","slideshow":"1","name":"KM4","description":"","banner":"uploads\/photo\/a9\/b3\/ae8-club.webp","photo":"uploads\/photo\/f7\/d5\/dt3.webp","start_date":"2025-01-03","end_date":"2025-01-31","link":"","status":"1","created":"1735922470","updated":"1736313601"},
+{"id":"13","category_id":"1","slideshow":"1","name":"KM5","description":"","banner":"uploads\/photo\/e5\/83\/testxemsao.webp","photo":"uploads\/photo\/e5\/83\/testxemsao.webp","start_date":"2025-01-03","end_date":"2025-01-31","link":"","status":"-1","created":"1735922589","updated":"1735923042"},
+{"id":"14","category_id":"1","slideshow":"1","name":"Km6","description":"","banner":"uploads\/photo\/c5\/64\/5.webp","photo":"uploads\/photo\/68\/20\/dt4.webp","start_date":"2025-01-04","end_date":"2025-01-31","link":"","status":"1","created":"1735979349","updated":"1735979439"},
+{"id":"15","category_id":"1","slideshow":"1","name":"Thách thức mọi giới hạn","description":"","banner":"uploads\/photo\/7e\/d5\/1.webp","photo":"uploads\/photo\/8f\/28\/1.webp","start_date":"2025-01-08","end_date":"2025-01-31","link":"","status":"1","created":"1736310652","updated":"1736310652"}
+]
+}
+]

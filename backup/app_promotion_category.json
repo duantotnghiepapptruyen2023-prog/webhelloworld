@@ -1,0 +1,13 @@
+[
+{"type":"header","version":"5.2.2","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"586"},
+{"type":"table","name":"app_promotion_category","database":"586","data":
+[
+{"id":"1","name":"Tất cả thành viên","status":"1","created":"1720199674","updated":"1720199674"},
+{"id":"2","name":"Thành viên mới","status":"1","created":"1720199672","updated":"1720199672"},
+{"id":"10","name":"Đại lý","status":"-1","created":"1720199669","updated":"1721662456"},
+{"id":"20","name":"VIP","status":"-1","created":"1720199665","updated":"1721659333"},
+{"id":"30","name":"Đặc biệt VIP","status":"-1","created":"1720199659","updated":"1721659323"}
+]
+}
+]

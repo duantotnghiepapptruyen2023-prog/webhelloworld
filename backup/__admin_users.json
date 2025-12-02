@@ -1,0 +1,10 @@
+[
+{"type":"header","version":"5.2.2","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"586"},
+{"type":"table","name":"__admin_users","database":"586","data":
+[
+{"id":"1","role":"root","name":"Puka","email":"puka@gmail.com","password":"b7e44b769ca60e727ffa5c07345e64ac","birthday":null,"gender":null,"address":"","phone":"","avatar":null,"reset_token":null,"reset_expiration":null,"created":null,"updated":"1735263729","status":"1"},
+{"id":"2","role":"mod","name":"taro","email":"acb@gmail.com","password":"1fa05bd88556e92488b045eba66d6df1","birthday":null,"gender":null,"address":"Nothing to do","phone":"05312336575","avatar":null,"reset_token":null,"reset_expiration":null,"created":"1721381344","updated":"1721382445","status":"-1"}
+]
+}
+]
