@@ -1,8 +1,8 @@
 const BET_FEE = 0.05
-const AGENCY_LV1_BET_BONUS = 0.1
+const AGENCY_LV1_BET_BONUS = 0.12
 const AGENCY_LV2_BET_BONUS = 0.06
-const AGENCY_LV3_BET_BONUS = 0.03
-const NAP_DAU = 0.05
+const AGENCY_LV3_BET_BONUS = 0.02
+const NAP_DAU = 0.09
 
 module.exports = {
   BET_FEE,

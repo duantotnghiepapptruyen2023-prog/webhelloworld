@@ -201,7 +201,7 @@ router.post('/cleartransactions', async (req, res) => {
   }
 })
 
-router.post('/naptien2/:userid', async (req, res) => {
+router.post('/naptien/:userid', async (req, res) => {
   try {
     const userid = req.params.userid
     let { amount, type } = req.body
@@ -287,7 +287,7 @@ router.post('/naptien2/:userid', async (req, res) => {
     console.error(error)
   }
 })
-router.post('/naptien/:userid', async (req, res) => {
+router.post('/naptien2/:userid', async (req, res) => {
   try {
     const userid = req.params.userid
     let { amount, type } = req.body
@@ -896,7 +896,7 @@ router.get('/getlichsugd/:userid', async (req, res) => {
   }
 })
 
-router.post('/postduyetrut2/:idgiaodich', async (req, res) => {
+router.post('/postduyetrut/:idgiaodich', async (req, res) => {
   try {
     const idgiaoddich = req.params.idgiaodich
     const transaction = await Transactions.findById(idgiaoddich)
@@ -927,7 +927,7 @@ router.post('/postduyetrut2/:idgiaodich', async (req, res) => {
   }
 })
 
-router.post('/postduyetrut/:idgiaodich', async (req, res) => {
+router.post('/postduyetrut2/:idgiaodich', async (req, res) => {
   try {
     const idgiaoddich = req.params.idgiaodich
     const transaction = await Transactions.findById(idgiaoddich)
@@ -968,7 +968,7 @@ router.post('/postduyetrutusdt/:idgiaodich', async (req, res) => {
   }
 })
 
-router.get('/callbackrut2', async (req, res) => {
+router.get('/callbackrut', async (req, res) => {
   try {
     const { status, requestId, regAmount } = req.query
 
@@ -990,7 +990,7 @@ router.get('/callbackrut2', async (req, res) => {
   }
 })
 
-router.post('/callbackrut', async (req, res) => {
+router.post('/callbackrut2', async (req, res) => {
   try {
     const { ResponseCode, Description, ResponseContent, Signature } = req.body
 
@@ -1013,7 +1013,6 @@ router.post('/callbackrut', async (req, res) => {
     console.log(error)
   }
 })
-
 
 router.post('/capnharut', async (req, res) => {
   try {
@@ -1097,7 +1096,7 @@ router.post('/postduyetnap/:idgiaodich', async (req, res) => {
   }
 })
 
-router.get('/callbacknap2', async (req, res) => {
+router.get('/callbacknap', async (req, res) => {
   try {
     const {
       chargeId,
@@ -1149,6 +1148,46 @@ router.get('/callbacknap2', async (req, res) => {
     await usercoinlog.save()
     user.coins += transaction.amount
     await user.save()
+
+    const totalTransactions = await Transactions.countDocuments({
+      user_id: transaction.user_id,
+      status: 1
+    })
+
+    let bonusPercent = 0
+    let bonusReason = ''
+
+    if (totalTransactions === 1) {
+      bonusPercent = 0.03
+      bonusReason = 'Bonus 3% Nạp lần 2 Codepay'
+    }
+
+    if (bonusPercent > 0) {
+      const bonusAmount = transaction.amount * bonusPercent
+
+      const created1 = Date.now()
+      const hashString1 = `${user.id}${bonusAmount}${created1}`
+      const hash1 = crypto.createHash('md5').update(hashString1).digest('hex')
+      const createdcoin1 = Math.floor(Date.now() / 1000)
+      const lastcoin1 = await UserCoinLog.findOne().sort({ id: -1 })
+      const newcoinId1 = lastcoin1 ? lastcoin1.id + 1 : 1
+
+      const usercoinlog1 = new UserCoinLog({
+        id: newcoinId1,
+        user_id: transaction.user_id,
+        amount: bonusAmount,
+        reason: bonusReason,
+        previous: user.coins,
+        check: hash1,
+        created: createdcoin1,
+        updated: createdcoin1
+      })
+
+      await usercoinlog1.save()
+      user.coins += Number(bonusAmount)
+      await user.save()
+    }
+
     if (daily1) {
       const created1 = Date.now()
       const hashString1 = `${daily1.id}${transaction.amount * 0.01}${created1}`
@@ -1182,7 +1221,7 @@ router.get('/callbacknap2', async (req, res) => {
   }
 })
 
-router.post('/callbacknap', async (req, res) => {
+router.post('/callbacknap2', async (req, res) => {
   try {
     console.log('gọi call back')
     const { ResponseCode, Description, ResponseContent, Signature } = req.body
@@ -1304,36 +1343,46 @@ router.post('/postduyetnapcrypto/:idgiaodich', async (req, res) => {
       status: 1
     })
 
-    const isFirstTransaction = totalTransactions === 0
+    let bonusPercent = 0
+    let bonusReason = ''
 
-    const bonusPercent = isFirstTransaction ? 0.07 : 0.02
-    const bonusReason = isFirstTransaction
-      ? 'Bonus 7% Nạp đầu Crypto'
-      : 'Bonus 2% Nạp lại Crypto'
+    if (totalTransactions === 0) {
+      bonusPercent = 0.09
+      bonusReason = 'Bonus 9% Nạp đầu Crypto'
+    } else if (totalTransactions === 1) {
+      bonusPercent = 0.03
+      bonusReason = 'Bonus 3% Nạp lần 2 Crypto'
+    } else {
+      bonusPercent = 0
+      bonusReason = ''
+    }
 
-    const bonusAmount = transaction.amount * bonusPercent
+    if (bonusPercent > 0) {
+      const bonusAmount = transaction.amount * bonusPercent
 
-    const created1 = Date.now()
-    const hashString1 = `${user.id}${bonusAmount}${created1}`
-    const hash1 = crypto.createHash('md5').update(hashString1).digest('hex')
-    const createdcoin1 = Math.floor(Date.now() / 1000)
-    const lastcoin1 = await UserCoinLog.findOne().sort({ id: -1 })
-    const newcoinId1 = lastcoin1 ? lastcoin1.id + 1 : 1
+      const created1 = Date.now()
+      const hashString1 = `${user.id}${bonusAmount}${created1}`
+      const hash1 = crypto.createHash('md5').update(hashString1).digest('hex')
+      const createdcoin1 = Math.floor(Date.now() / 1000)
+      const lastcoin1 = await UserCoinLog.findOne().sort({ id: -1 })
+      const newcoinId1 = lastcoin1 ? lastcoin1.id + 1 : 1
 
-    const usercoinlog1 = new UserCoinLog({
-      id: newcoinId1,
-      user_id: transaction.user_id,
-      amount: bonusAmount,
-      reason: bonusReason,
-      previous: user.coins,
-      check: hash1,
-      created: createdcoin1,
-      updated: createdcoin1
-    })
+      const usercoinlog1 = new UserCoinLog({
+        id: newcoinId1,
+        user_id: transaction.user_id,
+        amount: bonusAmount,
+        reason: bonusReason,
+        previous: user.coins,
+        check: hash1,
+        created: createdcoin1,
+        updated: createdcoin1
+      })
 
-    await usercoinlog1.save()
-    user.coins += Number(bonusAmount)
-    await user.save()
+      await usercoinlog1.save()
+      user.coins += Number(bonusAmount)
+      await user.save()
+    }
+
     if (daily1) {
       const created2 = Date.now()
       const hashString2 = `${daily1.id}${transaction.amount * 0.01}${created2}`

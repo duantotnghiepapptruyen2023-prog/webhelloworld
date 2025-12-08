@@ -1,8 +1,8 @@
 const axios = require('axios')
 
-const BOT_TOKEN = '8456425771:AAEIZ7uSEQkH7R5Znrpy8XCPdprkf_mB7rI'
+const BOT_TOKEN = '8522167212:AAEg-olcZpDEeCSPjdKlUPkbR3di-9JP6kk'
 
-const CHAT_ID = '-4643481594'
+const CHAT_ID = '-5030108189'
 
 async function handelbot (message) {
   const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${message}`
