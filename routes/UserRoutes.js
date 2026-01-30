@@ -1101,6 +1101,7 @@ router.post('/kiemtramkbank/:userId', async (req, res) => {
   try {
     const userId = req.params.userId
     const user = await User.findById(userId)
+    console.log(user)
     if (
       !user.bank_name ||
       !user.bank_account_name ||
