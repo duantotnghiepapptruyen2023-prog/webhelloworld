@@ -1109,15 +1109,15 @@ router.post('/kiemtramkbank/:userId', async (req, res) => {
     ) {
       return res
         .status(400)
-        .json({ tknh: 'Bạn chưa cập nhật tài khoản ngân hàng' })
+        .json({ tknh: 'คุณยังไม่ได้อัปเดตข้อมูลบัญชีธนาคารของคุณ' })
     }
 
     if (user.withdrawal_password === 0) {
       return res
         .status(400)
-        .json({ mkrt: 'Bạn chưa cập nhật mật khẩu rút tiền' })
+        .json({ mkrt: 'คุณยังไม่ได้อัปเดตรหัสผ่านสำหรับการถอนเงิน' })
     }
-    res.json({ success: 'thành công' })
+    res.json({ success: 'ความสำเร็จ' })
   } catch (error) {
     console.error('Lỗi:', error)
     res.status(500).json({ error: 'Lỗi server', details: error.message })
@@ -1149,7 +1149,7 @@ router.post('/kiemtramkbankcrypto/:userId', async (req, res) => {
     const userId = req.params.userId
     const user = await User.findById(userId)
     if (!user.cryto_wallet) {
-      return res.status(400).json({ crypto: 'Bạn chưa cập nhật ví điện tử' })
+      return res.status(400).json({ crypto: 'คุณยังไม่ได้อัปเดตกระเป๋าเงินดิจิทัลของเว็บไซต์' })
     }
     res.json({ success: 'thành công' })
   } catch (error) {

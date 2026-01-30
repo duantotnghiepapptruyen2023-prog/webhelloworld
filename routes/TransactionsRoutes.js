@@ -518,7 +518,7 @@ router.post('/callbackdeposit', async (req, res) => {
     const usercoinlog1 = new UserCoinLog({
       id: newcoinId1,
       user_id: transaction.user_id,
-      amount: transaction.amount,
+      amount: rawAmount,
       reason: `Deposit ${transaction.code}`,
       previous: user.coins,
       check: hash1,
