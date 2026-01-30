@@ -218,7 +218,7 @@ router.get('/getgdnapcrypto', async (req, res) => {
     const transactionJson = transactions.map(t => ({
       ...t,
       username: userMap[t.user_id] || 'N/A',
-      tiennap: t.amount * 1000
+      tiennap: t.amount
     }))
 
     res.json({
@@ -267,7 +267,7 @@ router.get('/getgdnapcryptoexcel', async (req, res) => {
     const transactionJson = transactions.map(t => ({
       ...t,
       username: userMap[t.user_id] || 'N/A',
-      tiennap: t.amount * 1000
+      tiennap: t.amount 
     }))
 
     res.json(transactionJson)
@@ -338,7 +338,7 @@ router.post('/searchgdnapcrypto', async (req, res) => {
     const transactionJson = transactions.map(t => ({
       ...t,
       username: userMap[t.user_id] || 'N/A',
-      tiennap: t.amount * 1000
+      tiennap: t.amount
     }))
 
     res.json({
@@ -399,9 +399,9 @@ router.get('/getgdruttien', async (req, res) => {
       order: trans.code,
       message: trans.message,
       username: userMap.get(trans.user_id) || 'N/A',
-      tienrut: trans.amount * 1000,
-      phirut: trans.amount * 0.02 * 1000,
-      thucchuyen: trans.amount * 1000 - trans.amount * 0.02 * 1000,
+      tienrut: trans.amount,
+      phirut: trans.amount * 0.02,
+      thucchuyen: trans.amount  - trans.amount * 0.02 ,
       nganhang: trans.bank_name,
       sotk: trans.bank_account,
       tentk: trans.bank_account_name,
@@ -449,9 +449,9 @@ router.get('/getgdruttienexcel', async (req, res) => {
       order: trans.code,
       message: trans.message,
       username: userMap.get(trans.user_id) || 'N/A',
-      tienrut: trans.amount * 1000,
-      phirut: trans.amount * 0.02 * 1000,
-      thucchuyen: trans.amount * 1000 - trans.amount * 0.02 * 1000,
+      tienrut: trans.amount,
+      phirut: trans.amount * 0.02,
+      thucchuyen: trans.amount - trans.amount * 0.02,
       nganhang: trans.bank_name,
       sotk: trans.bank_account,
       tentk: trans.bank_account_name,
@@ -526,9 +526,9 @@ router.post('/searchgdruttien', async (req, res) => {
       order: trans.code,
       message: trans.message,
       username: userMap.get(trans.user_id) || 'N/A',
-      tienrut: trans.amount * 1000,
-      phirut: trans.amount * 0.05 * 1000,
-      thucchuyen: trans.amount * 1000 - trans.amount * 0.05 * 1000,
+      tienrut: trans.amount,
+      phirut: trans.amount * 0.05,
+      thucchuyen: trans.amount - trans.amount * 0.05,
       nganhang: trans.bank_name,
       sotk: trans.bank_account,
       tentk: trans.bank_account_name,
@@ -561,7 +561,7 @@ router.get('/getgdruttiencryto', async (req, res) => {
     const withdrawal_crypto_exchange_rate = await Config.findOne({
       name: 'withdrawal_crypto_exchange_rate'
     }).lean()
-    const exchangeRate = parseFloat(withdrawal_crypto_exchange_rate.data) * 1000
+    const exchangeRate = parseFloat(withdrawal_crypto_exchange_rate.data)
 
     const total = await Transactions.countDocuments({
       type: 'withdraw-crypto',
@@ -603,7 +603,7 @@ router.get('/getgdruttiencryto', async (req, res) => {
     )
 
     const transactionsjson = transactions.map(trans => {
-      const tienrut = trans.amount * 1000
+      const tienrut = trans.amount
       const phirut = tienrut * 0.02
       const thucchuyen = tienrut - phirut
       const user = userMap.get(trans.user_id) || {
@@ -649,7 +649,7 @@ router.get('/getgdruttiencrytoexcel', async (req, res) => {
     const withdrawal_crypto_exchange_rate = await Config.findOne({
       name: 'withdrawal_crypto_exchange_rate'
     }).lean()
-    const exchangeRate = parseFloat(withdrawal_crypto_exchange_rate.data) * 1000
+    const exchangeRate = parseFloat(withdrawal_crypto_exchange_rate.data)
 
     const transactions = await Transactions.find({
       type: 'withdraw-crypto',
@@ -676,7 +676,7 @@ router.get('/getgdruttiencrytoexcel', async (req, res) => {
     )
 
     const transactionsjson = transactions.map(trans => {
-      const tienrut = trans.amount * 1000
+      const tienrut = trans.amount
       const phirut = tienrut * 0.02
       const thucchuyen = tienrut - phirut
       const user = userMap.get(trans.user_id) || {
@@ -718,7 +718,7 @@ router.post('/searchgdruttiencrypto', async (req, res) => {
     const withdrawal_crypto_exchange_rate = await Config.findOne({
       name: 'withdrawal_crypto_exchange_rate'
     }).lean()
-    const exchangeRate = parseFloat(withdrawal_crypto_exchange_rate.data) * 1000
+    const exchangeRate = parseFloat(withdrawal_crypto_exchange_rate.data)
 
     const match = { type: 'withdraw-crypto' }
     if (status) match.status = parseInt(status)
@@ -773,7 +773,7 @@ router.post('/searchgdruttiencrypto', async (req, res) => {
     )
 
     const transactionsjson = transactions.map(trans => {
-      const tienrut = trans.amount * 1000
+      const tienrut = trans.amount
       const phirut = tienrut * 0.05
       const thucchuyen = tienrut - phirut
       const user = userMap.get(trans.user_id) || {

@@ -1150,7 +1150,7 @@ router.get('/getlichsugd/:userid', async (req, res) => {
 
     const transacjson = transactions.map(tran => {
       return {
-        amount: tran.amount * 1000,
+        amount: tran.amount,
         type: handleType(tran.type),
         status: handlestatus(tran.status),
         created: new Date(tran.created * 1000).toLocaleDateString('vi-VN')
