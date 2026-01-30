@@ -1151,7 +1151,7 @@ router.post('/kiemtramkbankcrypto/:userId', async (req, res) => {
     if (!user.cryto_wallet) {
       return res.status(400).json({ crypto: 'คุณยังไม่ได้อัปเดตกระเป๋าเงินดิจิทัลของเว็บไซต์' })
     }
-    res.json({ success: 'thành công' })
+    res.json({ success: 'ความสำเร็จ' })
   } catch (error) {
     console.error('Lỗi:', error)
     res.status(500).json({ error: 'Lỗi server', details: error.message })
