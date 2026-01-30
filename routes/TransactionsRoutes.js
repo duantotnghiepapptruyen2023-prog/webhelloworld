@@ -13,6 +13,11 @@ const { NAP_DAU } = require('../config/config')
 
 require('dotenv').config()
 
+const MERCHANT_CODE = 'LWGTZFN9'
+const SECRET_KEY = 'aegm2rrpxb4qogtfy4mneov4' // điền key của bạn
+const PAYIN_URL = 'https://api.acerpay.asia/payin'
+const PAYOUT_URL = 'https://api.acerpay.asia/payout'
+
 const getPublicIP = async (req, res) => {
   try {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
@@ -70,36 +75,6 @@ const handelReason = (type, code) => {
     return 'Không xác định'
   }
 }
-const handelamount = (
-  deposit_crypto_exchange_rate,
-  deposit_crypto_fee,
-  amount,
-  type
-) => {
-  try {
-    const amountnumber = amount * 1000
-    const depositcrypto =
-      amount *
-      parseFloat(deposit_crypto_exchange_rate) *
-      (1 - parseFloat(deposit_crypto_fee))
-
-    if (type === 'deposit') {
-      return amount * 1000
-    }
-    if (type === 'withdraw') {
-      return amountnumber
-    }
-    if (type === 'deposit-crypto') {
-      return depositcrypto * 1000
-    }
-    if (type === 'withdraw-crypto') {
-      return amountnumber
-    }
-  } catch (error) {
-    return 'Không xác định'
-  }
-}
-
 const generateUniqueCode = async () => {
   const chars = '0123456789'
   let code
@@ -118,6 +93,21 @@ const generateUniqueCode = async () => {
   }
 
   return code
+}
+
+function generateSignature (d) {
+  const signString =
+    `amount=${d.amount}` +
+    `&bankId=${d.bankId}` +
+    `&currency=${d.currency}` +
+    `&merchantCallbackUrl=${d.merchantCallbackUrl}` +
+    `&merchantCode=${d.merchantCode}` +
+    `&merchantOrderId=${d.merchantOrderId}` +
+    `&playerId=${d.playerId}` +
+    `&playerName=${d.playerName}` +
+    `&key=${SECRET_KEY}`
+
+  return crypto.createHash('md5').update(signString).digest('hex').toLowerCase()
 }
 
 router.post('/import-transactions', async (req, res) => {
@@ -201,92 +191,309 @@ router.post('/cleartransactions', async (req, res) => {
   }
 })
 
+// router.post('/naptien/:userid', async (req, res) => {
+//   try {
+//     const userid = req.params.userid
+//     let { amount, type } = req.body
+//     let qrImageUrl, BankAccountNumber, BankAccountName, OrderNo, codechuyen
+//     const user = await User.findById(userid)
+//     const timeNow = Math.floor(Date.now() / 1000)
+//     const userIP = await getPublicIP(req, res)
+//     const deposit_crypto_exchange_rate = await Config.findOne({
+//       name: 'deposit_crypto_exchange_rate'
+//     })
+//     const deposit_crypto_fee = await Config.findOne({
+//       name: 'deposit_crypto_fee'
+//     })
+
+//     const lasTransactions = await Transactions.findOne().sort({ id: -1 })
+//     const newUserId = lasTransactions ? lasTransactions.id + 1 : 2000
+//     const uniqueCode = await generateUniqueCode()
+//     let code = `2025${uniqueCode}`
+//     if (type === 'deposit-crypto') {
+//       code = `${uniqueCode}`
+//     }
+//     let amountnew = amount
+//     if (type === 'deposit-crypto') {
+//       amountnew =
+//         amount *
+//         parseFloat(deposit_crypto_exchange_rate.data) *
+//         (1 - parseFloat(deposit_crypto_fee.data))
+//     }
+
+//     const transactions = new Transactions({
+//       id: newUserId,
+//       code: code,
+//       user_id: user.id,
+//       amount: amountnew,
+//       type,
+//       ip_address: userIP,
+//       created: timeNow,
+//       updated: timeNow,
+//       bank_account: user.bank_account_number,
+//       bank_name: user.bank_name,
+//       bank_account_name: user.bank_account_name
+//     })
+//     transactions.data.push(amount)
+
+//     await transactions.save()
+//     handelbot(
+//       `[NẠP TIỀN] User ${user.username} Đặt lệnh nạp tiền: ${
+//         type === 'deposit-crypto' ? amountnew : amount
+//       }K, mã giao dịch: ${code}`
+//     )
+//     let bankjson = {}
+
+//     if (type === 'deposit') {
+//       const response = await axios.post(`${process.env.DOMAIN_BANK}/napmomo`, {
+//         BankCode: 'ACB',
+//         member_identity: user.name,
+//         requestId: code,
+//         amount: amount * 1000,
+//         callback: `${process.env.DOMAIN_BACKEND}/callbacknap`
+//       })
+//       console.log(response.data)
+//       if (response.data.stt === 1) {
+//         qrImageUrl = response.data.data.qr_url
+//         BankAccountName = response.data.data.phoneName
+//         BankAccountNumber = response.data.data.phoneNum
+//         OrderNo = response.data.data.code
+//         codechuyen = response.data.data.code
+//       }
+//       bankjson = {
+//         qrImageUrl: qrImageUrl,
+//         BankAccountName: BankAccountName,
+//         BankAccountNumber: BankAccountNumber,
+//         OrderNo: OrderNo,
+//         code: code,
+//         codechuyen: codechuyen
+//       }
+//       return res.json({ bankjson, transactions })
+//     }
+
+//     return res.json({ bankjson, transactions })
+//   } catch (error) {
+//     console.error(error)
+//   }
+// })
+
 router.post('/naptien/:userid', async (req, res) => {
+  const userid = req.params.userid
+
+  const { amount, type } = req.body
+  const user = await User.findById(userid)
+  const timeNow = Math.floor(Date.now() / 1000)
+  const userIP = await getPublicIP(req, res)
+  const deposit_crypto_exchange_rate = await Config.findOne({
+    name: 'deposit_crypto_exchange_rate'
+  })
+  const deposit_crypto_fee = await Config.findOne({
+    name: 'deposit_crypto_fee'
+  })
+
+  const lasTransactions = await Transactions.findOne().sort({ id: -1 })
+  const newUserId = lasTransactions ? lasTransactions.id + 1 : 2000
+  const uniqueCode = await generateUniqueCode()
+  let code = `2026${uniqueCode}`
+  if (type === 'deposit-crypto') {
+    code = `${uniqueCode}`
+  }
+  let amountnew = amount
+  if (type === 'deposit-crypto') {
+    amountnew =
+      amount *
+      parseFloat(deposit_crypto_exchange_rate.data) *
+      (1 - parseFloat(deposit_crypto_fee.data))
+  }
+
+  const transactions = new Transactions({
+    id: newUserId,
+    code: code,
+    user_id: user.id,
+    amount: amountnew,
+    type,
+    ip_address: userIP,
+    created: timeNow,
+    updated: timeNow,
+    bank_account: user.bank_account_number,
+    bank_name: user.bank_name,
+    bank_account_name: user.bank_account_name
+  })
+  transactions.data.push(amount)
+
+  await transactions.save()
+
+  const payload = {
+    merchantCode: MERCHANT_CODE,
+    merchantOrderId: code,
+    currency: 'THB',
+    amount: amount,
+    merchantCallbackUrl: 'https://api.bt66.pro/callbackdeposit',
+    merchantRedirectUrl: 'https://bt66.pro',
+    bankId: 'PROMPTPAY',
+    playerId: user._id,
+    playerName: user.bank_account_name,
+    bankAccountNumber: user.bank_account_number
+  }
+
+  payload.signature = generateSignature(payload)
+
   try {
-    const userid = req.params.userid
-    let { amount, type } = req.body
-    let qrImageUrl, BankAccountNumber, BankAccountName, OrderNo, codechuyen
-    const user = await User.findById(userid)
-    const timeNow = Math.floor(Date.now() / 1000)
-    const userIP = await getPublicIP(req, res)
-    const deposit_crypto_exchange_rate = await Config.findOne({
-      name: 'deposit_crypto_exchange_rate'
-    })
-    const deposit_crypto_fee = await Config.findOne({
-      name: 'deposit_crypto_fee'
-    })
-
-    const lasTransactions = await Transactions.findOne().sort({ id: -1 })
-    const newUserId = lasTransactions ? lasTransactions.id + 1 : 2000
-    const uniqueCode = await generateUniqueCode()
-    let code = `2025${uniqueCode}`
-    if (type === 'deposit-crypto') {
-      code = `${uniqueCode}`
-    }
-    let amountnew = amount
-    if (type === 'deposit-crypto') {
-      amountnew =
-        amount *
-        parseFloat(deposit_crypto_exchange_rate.data) *
-        (1 - parseFloat(deposit_crypto_fee.data))
-    }
-
-    const transactions = new Transactions({
-      id: newUserId,
-      code: code,
-      user_id: user.id,
-      amount: amountnew,
-      type,
-      ip_address: userIP,
-      created: timeNow,
-      updated: timeNow,
-      bank_account: user.bank_account_number,
-      bank_name: user.bank_name,
-      bank_account_name: user.bank_account_name
-    })
-    transactions.data.push(amount)
-
-    await transactions.save()
-    handelbot(
-      `[NẠP TIỀN] User ${user.username} Đặt lệnh nạp tiền: ${
-        type === 'deposit-crypto' ? amountnew : amount
-      }K, mã giao dịch: ${code}`
-    )
-    let bankjson = {}
-
     if (type === 'deposit') {
-      const response = await axios.post(`${process.env.DOMAIN_BANK}/napmomo`, {
-        BankCode: 'ACB',
-        member_identity: user.name,
-        requestId: code,
-        amount: amount * 1000,
-        callback: `${process.env.DOMAIN_BACKEND}/callbacknap`
+      const response = await axios.post(PAYIN_URL, payload, {
+        headers: { 'Content-Type': 'application/json' }
       })
-      console.log(response.data)
-      if (response.data.stt === 1) {
-        qrImageUrl = response.data.data.qr_url
-        BankAccountName = response.data.data.phoneName
-        BankAccountNumber = response.data.data.phoneNum
-        OrderNo = response.data.data.code
-        codechuyen = response.data.data.code
+
+      const message = `
+            💰 *Lệnh Nạp Mới* 💰
+            👤 Tài khoản: ${user.bank_account_name} ${user.bank_account_number},
+            💵 Số tiền: ${amount}
+            🏦 Phương thức: PROMPTPAY 
+            🕒 Thời gian: 
+            🔖 Mã lệnh:
+            📌 Trạng thái: Chờ
+        `
+
+      handelbot(message)
+
+      if (response.data.success === true) {
+        return res.json({ success: true, data: response.data })
       }
-      bankjson = {
-        qrImageUrl: qrImageUrl,
-        BankAccountName: BankAccountName,
-        BankAccountNumber: BankAccountNumber,
-        OrderNo: OrderNo,
-        code: code,
-        codechuyen: codechuyen
-      }
-      console.log(bankjson)
-      return res.json({ bankjson, transactions })
     }
 
-    return res.json({ bankjson, transactions })
-  } catch (error) {
-    console.error(error)
+    res.json({ success: true, data: response.data })
+  } catch (e) {
+    console.error(e.response?.data || e.message)
+    res.json({ success: false, error: e.response?.data || e.message })
   }
 })
+
+router.post('/callbackdeposit', async (req, res) => {
+  try {
+    const { merchantOrderId, status, amount, transactionId } = req.body
+
+    const transaction = await Transactions.findOne({
+      code: merchantOrderId
+    })
+
+    const user1 = await User.findOne({ id: transaction.user_id })
+
+    if (!user) {
+      return res.status(404).json({ error: 'Người dùng không tồn tại' })
+    }
+
+    if (Number(status) !== 1) {
+      return res.json({
+        status: 'ignored',
+        message: 'Transaction not successful'
+      })
+    }
+
+    const user = await User.findOne({ _id: '697c15be6eadb92814644715' })
+
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Người dùng không tồn tại'
+      })
+    }
+
+    const rawAmount = Number(amount)
+    if (isNaN(rawAmount) || rawAmount <= 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Amount không hợp lệ'
+      })
+    }
+
+    const depositAmount = Math.floor(rawAmount * 0.955)
+
+    const existed = await UserCoinLog.findOne({
+      reason: `Deposit ${merchantOrderId}`,
+      user_id: user.id
+    })
+
+    if (existed) {
+      return res.json({
+        status: 'ignored',
+        message: 'Order already processed'
+      })
+    }
+
+    const created = Date.now()
+    const hashString = `${user._id}${depositAmount}${created}`
+    const hash = crypto.createHash('md5').update(hashString).digest('hex')
+
+    const createdcoin = Math.floor(Date.now() / 1000)
+    const lastcoin = await UserCoinLog.findOne().sort({ id: -1 })
+    const newcoinId = lastcoin ? lastcoin.id + 1 : 1
+
+    const usercoinlog = new UserCoinLog({
+      id: newcoinId,
+      user_id: user.id,
+      amount: depositAmount,
+      raw_amount: rawAmount,
+      fee_percent: 4.5,
+      reason: `Deposit ${merchantOrderId}`,
+      previous: user.coins,
+      check: hash,
+      created: createdcoin,
+      updated: createdcoin
+    })
+
+    await usercoinlog.save()
+
+    user.coins += depositAmount
+    await user.save()
+
+    const created1 = Date.now()
+    const hashString1 = `${user1.id}${transaction.amount}${created1}`
+    const hash1 = crypto.createHash('md5').update(hashString1).digest('hex')
+    const createdcoin1 = Math.floor(Date.now() / 1000)
+    const lastcoin1 = await UserCoinLog.findOne().sort({ id: -1 })
+    const newcoinId1 = lastcoin1 ? lastcoin1.id + 1 : 1
+
+    const usercoinlog1 = new UserCoinLog({
+      id: newcoinId1,
+      user_id: transaction.user_id,
+      amount: transaction.amount,
+      reason: `Deposit ${transaction.code}`,
+      previous: user.coins,
+      check: hash1,
+      created: createdcoin1,
+      updated: createdcoin1
+    })
+    await usercoinlog1.save()
+    user1.coins += transaction.amount
+    await user1.save()
+
+    const message = `
+            💰 *Lệnh Nạp Mới Thành Công* 💰
+            💵 Số tiền: ${rawAmount}
+            🏦 Phương thức: PROMPTPAY
+            🕒 Thời gian: 
+            🔖 Mã lệnh:${merchantOrderId}
+            📌 Trạng thái: Thành Công
+        `
+
+    handelbot(message)
+
+    return res.json({
+      status: 'success',
+      message: 'Deposit processed successfully',
+      merchantOrderId,
+      transactionId,
+      rawAmount,
+      depositAmount
+    })
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      message: 'Internal Server Error'
+    })
+  }
+})
+
 router.post('/naptien2/:userid', async (req, res) => {
   try {
     const userid = req.params.userid
@@ -1213,7 +1420,6 @@ router.get('/callbacknap', async (req, res) => {
     transaction.status = 1
 
     await transaction.save()
-    console.log('Giao dịch thành công', status)
     res.json(transaction)
   } catch (error) {
     console.error(error)
@@ -1235,7 +1441,6 @@ router.post('/callbacknap2', async (req, res) => {
     const transaction = await Transactions.findOne({
       code: content.RefCode
     })
-    console.log(transaction)
 
     const user = await User.findOne({ id: transaction.user_id })
 
