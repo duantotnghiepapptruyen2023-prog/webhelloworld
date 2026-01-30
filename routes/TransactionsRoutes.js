@@ -95,7 +95,7 @@ const generateUniqueCode = async () => {
   return code
 }
 
-function generateSignature (d) {
+function generateSignature(d) {
   const signString =
     `amount=${d.amount}` +
     `&bankId=${d.bankId}` +
@@ -343,6 +343,7 @@ router.post('/naptien/:userid', async (req, res) => {
       const response = await axios.post(PAYIN_URL, payload, {
         headers: { 'Content-Type': 'application/json' }
       })
+      console.log(response)
 
       const message = `
             💰 *Lệnh Nạp Mới* 💰
@@ -361,10 +362,13 @@ router.post('/naptien/:userid', async (req, res) => {
       }
     }
 
-    res.json({ success: true, data: response.data })
+    if (type === 'deposit-crypto') {
+      return res.json({ success: true, data: response.data })
+
+    }
   } catch (e) {
-    console.error(e.response?.data || e.message)
-    res.json({ success: false, error: e.response?.data || e.message })
+    console.error(e)
+    res.status(400).json({ success: false, error: e.response?.data || e.message })
   }
 })
 
@@ -541,8 +545,7 @@ router.post('/naptien2/:userid', async (req, res) => {
 
     await transactions.save()
     handelbot(
-      `[NẠP TIỀN] User ${user.username} Đặt lệnh nạp tiền: ${
-        type === 'deposit-crypto' ? amountnew : amount
+      `[NẠP TIỀN] User ${user.username} Đặt lệnh nạp tiền: ${type === 'deposit-crypto' ? amountnew : amount
       }K, mã giao dịch: ${code}`
     )
 
