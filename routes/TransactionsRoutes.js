@@ -95,7 +95,7 @@ const generateUniqueCode = async () => {
   return code
 }
 
-function generateSignature(d) {
+function generateSignature (d) {
   const signString =
     `amount=${d.amount}` +
     `&bankId=${d.bankId}` +
@@ -321,8 +321,6 @@ router.post('/naptien/:userid', async (req, res) => {
   })
   transactions.data.push(amount)
 
-
-
   const payload = {
     merchantCode: MERCHANT_CODE,
     merchantOrderId: code,
@@ -359,19 +357,19 @@ router.post('/naptien/:userid', async (req, res) => {
         await transactions.save()
         handelbot(message)
         return res.json({ success: true, data: response.data })
-      }
-      else {
+      } else {
         res.status(400).json({ success: false, error: response.data.errorMsg })
       }
     }
 
     if (type === 'deposit-crypto') {
       return res.json({ success: true, data: response.data })
-
     }
   } catch (e) {
     console.error(e)
-    res.status(400).json({ success: false, error: e.response?.data || e.message })
+    res
+      .status(400)
+      .json({ success: false, error: e.response?.data || e.message })
   }
 })
 
@@ -603,7 +601,8 @@ router.post('/naptien2/:userid', async (req, res) => {
 
     await transactions.save()
     handelbot(
-      `[NẠP TIỀN] User ${user.username} Đặt lệnh nạp tiền: ${type === 'deposit-crypto' ? amountnew : amount
+      `[NẠP TIỀN] User ${user.username} Đặt lệnh nạp tiền: ${
+        type === 'deposit-crypto' ? amountnew : amount
       }K, mã giao dịch: ${code}`
     )
 
@@ -1168,28 +1167,31 @@ router.post('/postduyetrut/:idgiaodich', async (req, res) => {
   try {
     const idgiaoddich = req.params.idgiaodich
     const transaction = await Transactions.findById(idgiaoddich)
-    const user = await User.findOne({ id: transaction.user_id })
-    const response = await axios.post(
-      `${process.env.DOMAIN_BANK}/ruttienmomo`,
-      {
-        bank_code: user.bank_swift_code,
-        bank_accountName: user.bank_account_name,
-        bank_account: user.bank_account_number,
-        callback: `${process.env.DOMAIN_BACKEND}/callbackrut`,
-        amount: transaction.amount * 1000 - transaction.amount * 0.02 * 1000,
-        requestId: transaction.code,
-        member_identity: user.name,
-        msg: ''
-      }
-    )
-    if (response.data.stt === 1) {
-      transaction.status = 1
-      await transaction.save()
-      return res.json(transaction)
-    } else {
-      console.log(response.data)
-      return res.status(500).json({ message: `${response.data}` })
-    }
+    // const user = await User.findOne({ id: transaction.user_id })
+    // const response = await axios.post(
+    //   `${process.env.DOMAIN_BANK}/ruttienmomo`,
+    //   {
+    //     bank_code: user.bank_swift_code,
+    //     bank_accountName: user.bank_account_name,
+    //     bank_account: user.bank_account_number,
+    //     callback: `${process.env.DOMAIN_BACKEND}/callbackrut`,
+    //     amount: transaction.amount * 1000 - transaction.amount * 0.02 * 1000,
+    //     requestId: transaction.code,
+    //     member_identity: user.name,
+    //     msg: ''
+    //   }
+    // )
+    // if (response.data.stt === 1) {
+    //   transaction.status = 1
+    //   await transaction.save()
+    //   return res.json(transaction)
+    // } else {
+    //   console.log(response.data)
+    //   return res.status(500).json({ message: `${response.data}` })
+    // }
+    transaction.status = 1
+    await transaction.save()
+    return res.json(transaction)
   } catch (error) {
     res.status(500).json({ error: 'Lỗi khi lấy dữ liệu' })
   }
