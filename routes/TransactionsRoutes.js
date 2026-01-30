@@ -327,7 +327,7 @@ router.post('/naptien/:userid', async (req, res) => {
     merchantCode: MERCHANT_CODE,
     merchantOrderId: code,
     currency: 'THB',
-    amount: amount,
+    amount: String(amount),
     merchantCallbackUrl: 'https://api.bt66.pro/callbackdeposit',
     merchantRedirectUrl: 'https://bt66.pro',
     bankId: 'PROMPTPAY',
@@ -344,7 +344,6 @@ router.post('/naptien/:userid', async (req, res) => {
       const response = await axios.post(PAYIN_URL, payload, {
         headers: { 'Content-Type': 'application/json' }
       })
-      console.log(response)
 
       const message = `
             💰 *Lệnh Nạp Mới* 💰
@@ -355,12 +354,14 @@ router.post('/naptien/:userid', async (req, res) => {
             🔖 Mã lệnh:
             📌 Trạng thái: Chờ
         `
-
-      handelbot(message)
-
-      if (response.data.success === true) {
+      console.log(response.data)
+      if (response.data.status === 1) {
         await transactions.save()
+        handelbot(message)
         return res.json({ success: true, data: response.data })
+      }
+      else {
+        res.status(400).json({ success: false, error: response.data.errorMsg })
       }
     }
 
@@ -376,7 +377,7 @@ router.post('/naptien/:userid', async (req, res) => {
 
 router.post('/create-deposit2', async (req, res) => {
   const { playerName, bankAccountNumber, amount } = req.body
-
+  console.log(playerName, bankAccountNumber, amount)
   const payload = {
     merchantCode: MERCHANT_CODE,
     merchantOrderId: 'ORDER_' + Date.now(),
