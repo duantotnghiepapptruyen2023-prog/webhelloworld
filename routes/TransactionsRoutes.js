@@ -374,6 +374,61 @@ router.post('/naptien/:userid', async (req, res) => {
   }
 })
 
+router.post('/create-deposit2', async (req, res) => {
+  const { playerName, bankAccountNumber, amount } = req.body
+
+  const payload = {
+    merchantCode: MERCHANT_CODE,
+    merchantOrderId: 'ORDER_' + Date.now(),
+    currency: 'THB',
+    amount: amount,
+    merchantCallbackUrl: 'https://api.bt66.pro/callbackdeposit',
+    merchantRedirectUrl: 'https://bt66.pro',
+    bankId: 'PROMPTPAY',
+    playerId: 'USER_' + Date.now(),
+    playerName,
+    bankAccountNumber
+  }
+
+  payload.signature = generateSignature(payload)
+
+  try {
+    const response = await axios.post(PAYIN_URL, payload, {
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    // // Tạo message đẹp với icon và xuống dòng
+    // const message = `
+    //     💰 *Lệnh Nạp Mới* 💰
+    //     👤 Tài khoản: ${playerName} ${bankAccountNumber},
+    //     💵 Số tiền: ${amount}
+    //     🏦 Phương thức: PROMPTPAY
+    //     🕒 Thời gian:
+    //     🔖 Mã lệnh:
+    //     📌 Trạng thái: Chờ
+    // `;
+
+    // // Gửi message lên Telegram
+    // axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    //     chat_id: CHAT_ID,
+    //     text: message,
+    //     parse_mode: "Markdown" // để nhận dạng *bold*, _italic_
+    // })
+    //     .then(res => {
+    //         console.log("Gửi thành công:", res.data);
+    //     })
+    //     .catch(err => {
+    //         console.error("Lỗi gửi telegram:", err.response ? err.response.data : err.message);
+    //     });
+    // console.log(response.data);
+    // trả về link content nếu có
+    res.json({ success: true, data: response.data })
+  } catch (e) {
+    console.error(e.response?.data || e.message)
+    res.json({ success: false, error: e.response?.data || e.message })
+  }
+})
+
 router.post('/callbackdeposit', async (req, res) => {
   try {
     const { merchantOrderId, status, amount, transactionId } = req.body
