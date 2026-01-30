@@ -321,7 +321,7 @@ router.post('/naptien/:userid', async (req, res) => {
   })
   transactions.data.push(amount)
 
-  await transactions.save()
+
 
   const payload = {
     merchantCode: MERCHANT_CODE,
@@ -335,6 +335,7 @@ router.post('/naptien/:userid', async (req, res) => {
     playerName: user.bank_account_name,
     bankAccountNumber: user.bank_account_number
   }
+  console.log(amount, user.bank_account_name, user.bank_account_number)
 
   payload.signature = generateSignature(payload)
 
@@ -358,6 +359,7 @@ router.post('/naptien/:userid', async (req, res) => {
       handelbot(message)
 
       if (response.data.success === true) {
+        await transactions.save()
         return res.json({ success: true, data: response.data })
       }
     }
