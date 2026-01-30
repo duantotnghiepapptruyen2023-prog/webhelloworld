@@ -363,7 +363,8 @@ router.post('/naptien/:userid', async (req, res) => {
     }
 
     if (type === 'deposit-crypto') {
-      return res.json({ success: true, data: response.data })
+      await transactions.save()
+      return res.json({ transactions })
     }
   } catch (e) {
     console.error(e)
