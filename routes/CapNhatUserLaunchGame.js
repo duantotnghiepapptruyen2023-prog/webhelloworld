@@ -1,7 +1,7 @@
 const axios = require('axios')
 
-const COMPANY_KEY = 'F1BAFEB7FE4B40E6864D4FF74F861E87'
-const SERVER_ID = 'YY-production'
+const COMPANY_KEY = 'D9062110D42341F9B2BDFC852A5D45AF'
+const SERVER_ID = 'YY-demoanduat'
 const User = require('../models/UserModel')
 const UserCoinLog = require('../models/CoinLogModel')
 const crypto = require('crypto')

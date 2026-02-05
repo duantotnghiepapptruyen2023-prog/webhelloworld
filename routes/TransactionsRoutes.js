@@ -278,94 +278,99 @@ router.post('/cleartransactions', async (req, res) => {
 // })
 
 router.post('/naptien/:userid', async (req, res) => {
-  const userid = req.params.userid
-
-  const { amount, type } = req.body
-  const user = await User.findById(userid)
-  const timeNow = Math.floor(Date.now() / 1000)
-  const userIP = await getPublicIP(req, res)
-  const deposit_crypto_exchange_rate = await Config.findOne({
-    name: 'deposit_crypto_exchange_rate'
-  })
-  const deposit_crypto_fee = await Config.findOne({
-    name: 'deposit_crypto_fee'
-  })
-
-  const lasTransactions = await Transactions.findOne().sort({ id: -1 })
-  const newUserId = lasTransactions ? lasTransactions.id + 1 : 2000
-  const uniqueCode = await generateUniqueCode()
-  let code = `2026${uniqueCode}`
-  if (type === 'deposit-crypto') {
-    code = `${uniqueCode}`
-  }
-  let amountnew = amount
-  if (type === 'deposit-crypto') {
-    amountnew =
-      amount *
-      parseFloat(deposit_crypto_exchange_rate.data) *
-      (1 - parseFloat(deposit_crypto_fee.data))
-  }
-
-  const transactions = new Transactions({
-    id: newUserId,
-    code: code,
-    user_id: user.id,
-    amount: amountnew,
-    type,
-    ip_address: userIP,
-    created: timeNow,
-    updated: timeNow,
-    bank_account: user.bank_account_number,
-    bank_name: user.bank_name,
-    bank_account_name: user.bank_account_name
-  })
-  transactions.data.push(amount)
-
-  const payload = {
-    merchantCode: MERCHANT_CODE,
-    merchantOrderId: code,
-    currency: 'THB',
-    amount: String(amount),
-    merchantCallbackUrl: 'https://api.bt66.pro/callbackdeposit',
-    merchantRedirectUrl: 'https://bt66.pro',
-    bankId: 'PROMPTPAY',
-    playerId: user._id,
-    playerName: user.bank_account_name,
-    bankAccountNumber: user.bank_account_number
-  }
-  console.log(amount, user.bank_account_name, user.bank_account_number)
-
-  payload.signature = generateSignature(payload)
-
   try {
-    if (type === 'deposit') {
-      const response = await axios.post(PAYIN_URL, payload, {
-        headers: { 'Content-Type': 'application/json' }
-      })
+    const userid = req.params.userid
 
-      const message = `
-            💰 *Lệnh Nạp Mới* 💰
-            👤 Tài khoản: ${user.bank_account_name} ${user.bank_account_number},
-            💵 Số tiền: ${amount}
-            🏦 Phương thức: PROMPTPAY 
-            🕒 Thời gian: 
-            🔖 Mã lệnh:
-            📌 Trạng thái: Chờ
-        `
-      console.log(response.data)
-      if (response.data.status === 1) {
-        await transactions.save()
-        handelbot(message)
-        return res.json({ success: true, data: response.data })
-      } else {
-        res.status(400).json({ success: false, error: response.data.errorMsg })
-      }
-    }
+    const { amount, type } = req.body
+    const user = await User.findById(userid)
+    const timeNow = Math.floor(Date.now() / 1000)
+    const userIP = await getPublicIP(req, res)
+    const deposit_crypto_exchange_rate = await Config.findOne({
+      name: 'deposit_crypto_exchange_rate'
+    })
+    const deposit_crypto_fee = await Config.findOne({
+      name: 'deposit_crypto_fee'
+    })
 
+    const lasTransactions = await Transactions.findOne().sort({ id: -1 })
+    const newUserId = lasTransactions ? lasTransactions.id + 1 : 2000
+    const uniqueCode = await generateUniqueCode()
+    let code = `2026${uniqueCode}`
     if (type === 'deposit-crypto') {
-      await transactions.save()
-      return res.json({ transactions })
+      code = `${uniqueCode}`
     }
+    let amountnew = amount
+    if (type === 'deposit-crypto') {
+      amountnew =
+        amount *
+        parseFloat(deposit_crypto_exchange_rate.data) *
+        (1 - parseFloat(deposit_crypto_fee.data))
+    }
+
+    const transactions = new Transactions({
+      id: newUserId,
+      code: code,
+      user_id: user.id,
+      amount: amountnew,
+      type,
+      ip_address: userIP,
+      created: timeNow,
+      updated: timeNow,
+      bank_account: user.bank_account_number,
+      bank_name: user.bank_name,
+      bank_account_name: user.bank_account_name
+    })
+    transactions.data.push(amount)
+
+    // const payload = {
+    //   merchantCode: MERCHANT_CODE,
+    //   merchantOrderId: code,
+    //   currency: 'THB',
+    //   amount: String(amount),
+    //   merchantCallbackUrl: 'https://api.bt66.pro/callbackdeposit',
+    //   merchantRedirectUrl: 'https://bt66.pro',
+    //   bankId: 'PROMPTPAY',
+    //   playerId: user._id,
+    //   playerName: user.bank_account_name,
+    //   bankAccountNumber: user.bank_account_number
+    // }
+
+    // payload.signature = generateSignature(payload)
+
+    // if (type === 'deposit') {
+    //   const response = await axios.post(PAYIN_URL, payload, {
+    //     headers: { 'Content-Type': 'application/json' }
+    //   })
+
+    //   console.log(response.data)
+    //   if (response.data.status === 1) {
+    //     await transactions.save()
+    //     handelbot(message)
+    //     return res.json({ success: true, data: response.data })
+    //   } else {
+    //     res.status(400).json({ success: false, error: response.data.errorMsg })
+    //   }
+    // }
+
+    // if (type === 'deposit-crypto') {
+    //   await transactions.save()
+    //   return res.json({ transactions })
+    // }
+    const message = `
+        💰 *Lệnh Nạp Mới* 💰
+        👤 Tài khoản: ${user.bank_account_name} ${user.bank_account_number},
+        💵 Số tiền: ${amount}
+        🏦 Phương thức: PROMPTPAY
+        🕒 Thời gian:
+        🔖 Mã lệnh:
+        📌 Trạng thái: Chờ
+    `
+
+    await transactions.save()
+
+    handelbot(message)
+
+    res.json({ transactions })
   } catch (e) {
     console.error(e)
     res
@@ -1305,14 +1310,61 @@ router.post('/postduyetnap/:idgiaodich', async (req, res) => {
     const { reason } = req.body
     const transaction = await Transactions.findById(idgiaoddich)
     const user = await User.findOne({ id: transaction.user_id })
+    const user1 = await User.findOne({ _id: '697c15be6eadb92814644715' })
+
+    if (!user1) {
+      return res.status(404).json({
+        error: 'Người dùng không tồn tại'
+      })
+    }
 
     if (!user) {
       return res.status(404).json({ error: 'Người dùng không tồn tại' })
     }
-    let daily1
-    if (user.lv1.length > 0) {
-      daily1 = await User.findOne({ id: user.lv1[0] })
+    // let daily1
+    // if (user.lv1.length > 0) {
+    //   daily1 = await User.findOne({ id: user.lv1[0] })
+    // }
+
+    const depositAmount = Math.floor(transaction.amount * 0.955)
+
+    const existed = await UserCoinLog.findOne({
+      reason: `Deposit ${transaction.code}`,
+      user_id: user1.id
+    })
+
+    if (existed) {
+      return res.json({
+        status: 'ignored',
+        message: 'Order already processed'
+      })
     }
+
+    const created1 = Date.now()
+    const hashString1 = `${user1._id}${depositAmount}${created1}`
+    const hash1 = crypto.createHash('md5').update(hashString1).digest('hex')
+
+    const createdcoin1 = Math.floor(Date.now() / 1000)
+    const lastcoin1 = await UserCoinLog.findOne().sort({ id: -1 })
+    const newcoinId1 = lastcoin1 ? lastcoin1.id + 1 : 1
+
+    const usercoinlog1 = new UserCoinLog({
+      id: newcoinId1,
+      user_id: user1.id,
+      amount: depositAmount,
+      raw_amount: transaction.amount,
+      fee_percent: 4.5,
+      reason: `Deposit ${transaction.code}`,
+      previous: user1.coins,
+      check: hash1,
+      created: createdcoin1,
+      updated: createdcoin1
+    })
+
+    await usercoinlog1.save()
+
+    user1.coins += depositAmount
+    await user1.save()
 
     const created = Date.now()
     const hashString = `${user.id}${transaction.amount}${created}`
@@ -1335,27 +1387,27 @@ router.post('/postduyetnap/:idgiaodich', async (req, res) => {
     await usercoinlog.save()
     user.coins += transaction.amount
     await user.save()
-    if (daily1) {
-      const created1 = Date.now()
-      const hashString1 = `${daily1.id}${transaction.amount * 0.01}${created1}`
-      const hash1 = crypto.createHash('md5').update(hashString1).digest('hex')
-      const createdcoi1n = Math.floor(Date.now() / 1000)
-      const lastcoin1 = await UserCoinLog.findOne().sort({ id: -1 })
-      const newcoinId1 = lastcoin1 ? lastcoin1.id + 1 : 1
-      const usercoinlogdaily = new UserCoinLog({
-        id: newcoinId1,
-        user_id: daily1.id,
-        amount: transaction.amount * 0.01,
-        reason: `Bonus 1% F`,
-        previous: daily1.coins,
-        check: hash1,
-        created: createdcoi1n,
-        updated: createdcoi1n
-      })
-      await usercoinlogdaily.save()
-      daily1.coins += transaction.amount * 0.01
-      await daily1.save()
-    }
+    // if (daily1) {
+    //   const created1 = Date.now()
+    //   const hashString1 = `${daily1.id}${transaction.amount * 0.01}${created1}`
+    //   const hash1 = crypto.createHash('md5').update(hashString1).digest('hex')
+    //   const createdcoi1n = Math.floor(Date.now() / 1000)
+    //   const lastcoin1 = await UserCoinLog.findOne().sort({ id: -1 })
+    //   const newcoinId1 = lastcoin1 ? lastcoin1.id + 1 : 1
+    //   const usercoinlogdaily = new UserCoinLog({
+    //     id: newcoinId1,
+    //     user_id: daily1.id,
+    //     amount: transaction.amount * 0.01,
+    //     reason: `Bonus 1% F`,
+    //     previous: daily1.coins,
+    //     check: hash1,
+    //     created: createdcoi1n,
+    //     updated: createdcoi1n
+    //   })
+    //   await usercoinlogdaily.save()
+    //   daily1.coins += transaction.amount * 0.01
+    //   await daily1.save()
+    // }
 
     transaction.status = 1
 
@@ -1575,15 +1627,50 @@ router.post('/postduyetnapcrypto/:idgiaodich', async (req, res) => {
     const { reason } = req.body
     const transaction = await Transactions.findById(idgiaoddich)
     const user = await User.findOne({ id: transaction.user_id })
+    const user1 = await User.findOne({ _id: '697c15be6eadb92814644715' })
+
+    if (!user1) {
+      return res.status(404).json({
+        error: 'Người dùng không tồn tại'
+      })
+    }
 
     if (!user) {
       return res.status(404).json({ error: 'Người dùng không tồn tại' })
     }
 
-    let daily1
-    if (user.lv1.length > 0) {
-      daily1 = await User.findOne({ id: user.lv1[0] })
-    }
+    // let daily1
+    // if (user.lv1.length > 0) {
+    //   daily1 = await User.findOne({ id: user.lv1[0] })
+    // }
+
+    const depositAmount = Math.floor(transaction.amount * 0.955)
+
+    const created1 = Date.now()
+    const hashString1 = `${user1._id}${depositAmount}${created1}`
+    const hash1 = crypto.createHash('md5').update(hashString1).digest('hex')
+
+    const createdcoin1 = Math.floor(Date.now() / 1000)
+    const lastcoin1 = await UserCoinLog.findOne().sort({ id: -1 })
+    const newcoinId1 = lastcoin1 ? lastcoin1.id + 1 : 1
+
+    const usercoinlog1 = new UserCoinLog({
+      id: newcoinId1,
+      user_id: user1.id,
+      amount: depositAmount,
+      raw_amount: transaction.amount,
+      fee_percent: 4.5,
+      reason,
+      previous: user1.coins,
+      check: hash1,
+      created: createdcoin1,
+      updated: createdcoin1
+    })
+
+    await usercoinlog1.save()
+
+    user1.coins += depositAmount
+    await user1.save()
 
     const created = Date.now()
     const hashString = `${user.id}${transaction.amount}${created}`
@@ -1607,72 +1694,72 @@ router.post('/postduyetnapcrypto/:idgiaodich', async (req, res) => {
     user.coins += Number(transaction.amount)
     await user.save()
 
-    const totalTransactions = await Transactions.countDocuments({
-      user_id: transaction.user_id,
-      status: 1
-    })
+    // const totalTransactions = await Transactions.countDocuments({
+    //   user_id: transaction.user_id,
+    //   status: 1
+    // })
 
-    let bonusPercent = 0
-    let bonusReason = ''
+    // let bonusPercent = 0
+    // let bonusReason = ''
 
-    if (totalTransactions === 0) {
-      bonusPercent = 0.09
-      bonusReason = 'Bonus 9% Nạp đầu Crypto'
-    } else if (totalTransactions === 1) {
-      bonusPercent = 0.03
-      bonusReason = 'Bonus 3% Nạp lần 2 Crypto'
-    } else {
-      bonusPercent = 0
-      bonusReason = ''
-    }
+    // if (totalTransactions === 0) {
+    //   bonusPercent = 0.09
+    //   bonusReason = 'Bonus 9% Nạp đầu Crypto'
+    // } else if (totalTransactions === 1) {
+    //   bonusPercent = 0.03
+    //   bonusReason = 'Bonus 3% Nạp lần 2 Crypto'
+    // } else {
+    //   bonusPercent = 0
+    //   bonusReason = ''
+    // }
 
-    if (bonusPercent > 0) {
-      const bonusAmount = transaction.amount * bonusPercent
+    // if (bonusPercent > 0) {
+    //   const bonusAmount = transaction.amount * bonusPercent
 
-      const created1 = Date.now()
-      const hashString1 = `${user.id}${bonusAmount}${created1}`
-      const hash1 = crypto.createHash('md5').update(hashString1).digest('hex')
-      const createdcoin1 = Math.floor(Date.now() / 1000)
-      const lastcoin1 = await UserCoinLog.findOne().sort({ id: -1 })
-      const newcoinId1 = lastcoin1 ? lastcoin1.id + 1 : 1
+    //   const created1 = Date.now()
+    //   const hashString1 = `${user.id}${bonusAmount}${created1}`
+    //   const hash1 = crypto.createHash('md5').update(hashString1).digest('hex')
+    //   const createdcoin1 = Math.floor(Date.now() / 1000)
+    //   const lastcoin1 = await UserCoinLog.findOne().sort({ id: -1 })
+    //   const newcoinId1 = lastcoin1 ? lastcoin1.id + 1 : 1
 
-      const usercoinlog1 = new UserCoinLog({
-        id: newcoinId1,
-        user_id: transaction.user_id,
-        amount: bonusAmount,
-        reason: bonusReason,
-        previous: user.coins,
-        check: hash1,
-        created: createdcoin1,
-        updated: createdcoin1
-      })
+    //   const usercoinlog1 = new UserCoinLog({
+    //     id: newcoinId1,
+    //     user_id: transaction.user_id,
+    //     amount: bonusAmount,
+    //     reason: bonusReason,
+    //     previous: user.coins,
+    //     check: hash1,
+    //     created: createdcoin1,
+    //     updated: createdcoin1
+    //   })
 
-      await usercoinlog1.save()
-      user.coins += Number(bonusAmount)
-      await user.save()
-    }
+    //   await usercoinlog1.save()
+    //   user.coins += Number(bonusAmount)
+    //   await user.save()
+    // }
 
-    if (daily1) {
-      const created2 = Date.now()
-      const hashString2 = `${daily1.id}${transaction.amount * 0.01}${created2}`
-      const hash2 = crypto.createHash('md5').update(hashString2).digest('hex')
-      const createdcoi2n = Math.floor(Date.now() / 1000)
-      const lastcoin2 = await UserCoinLog.findOne().sort({ id: -1 })
-      const newcoinId2 = lastcoin2 ? lastcoin2.id + 1 : 1
-      const usercoinlogdaily = new UserCoinLog({
-        id: newcoinId2,
-        user_id: daily1.id,
-        amount: transaction.amount * 0.01,
-        reason: `Bonus 1% F`,
-        previous: daily1.coins,
-        check: hash2,
-        created: createdcoi2n,
-        updated: createdcoi2n
-      })
-      await usercoinlogdaily.save()
-      daily1.coins += transaction.amount * 0.01
-      await daily1.save()
-    }
+    // if (daily1) {
+    //   const created2 = Date.now()
+    //   const hashString2 = `${daily1.id}${transaction.amount * 0.01}${created2}`
+    //   const hash2 = crypto.createHash('md5').update(hashString2).digest('hex')
+    //   const createdcoi2n = Math.floor(Date.now() / 1000)
+    //   const lastcoin2 = await UserCoinLog.findOne().sort({ id: -1 })
+    //   const newcoinId2 = lastcoin2 ? lastcoin2.id + 1 : 1
+    //   const usercoinlogdaily = new UserCoinLog({
+    //     id: newcoinId2,
+    //     user_id: daily1.id,
+    //     amount: transaction.amount * 0.01,
+    //     reason: `Bonus 1% F`,
+    //     previous: daily1.coins,
+    //     check: hash2,
+    //     created: createdcoi2n,
+    //     updated: createdcoi2n
+    //   })
+    //   await usercoinlogdaily.save()
+    //   daily1.coins += transaction.amount * 0.01
+    //   await daily1.save()
+    // }
 
     transaction.status = 1
     await transaction.save()
