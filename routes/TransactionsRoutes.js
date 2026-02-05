@@ -369,8 +369,12 @@ router.post('/naptien/:userid', async (req, res) => {
     await transactions.save()
 
     handelbot(message)
+    const bankjson={
+      bankAccountNumber: user.bank_account_number,
+      bankAccountName: user.bank_account_name
+    }
 
-    res.json({ transactions })
+    res.json({bankjson, transactions })
   } catch (e) {
     console.error(e)
     res
