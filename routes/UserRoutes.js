@@ -394,8 +394,8 @@ router.post('/postuserdailygame', async (req, res) => {
       Max: 50000000,
       MaxPerMatch: 200000000,
       CasinoTableLimit: 1,
-      CompanyKey: 'F1BAFEB7FE4B40E6864D4FF74F861E87',
-      ServerId: '84.247.147.56'
+      CompanyKey: 'D9062110D42341F9B2BDFC852A5D45AF',
+      ServerId: 'YY-demoanduat'
     }
 
     axios
@@ -432,7 +432,7 @@ router.post('/launch_game', async (req, res) => {
       return res.status(400).json({ message: 'Tài khoản không tồn tại' })
     }
 
-    const companyKey = 'F1BAFEB7FE4B40E6864D4FF74F861E87'
+    const companyKey = 'D9062110D42341F9B2BDFC852A5D45AF'
 
     await createUser(username)
     await deposit(username, user.id, user.coins)
@@ -444,7 +444,7 @@ router.post('/launch_game', async (req, res) => {
         Portfolio: portfolio,
         IsWapSports: false,
         CompanyKey: companyKey,
-        ServerId: 'YY-production'
+        ServerId: 'YY-demoanduat'
       },
       {
         headers: {
@@ -489,8 +489,8 @@ router.post('/postdanhsachgame', async (req, res) => {
     const response = await axios.post(
       'https://ex-api-demo-yy.568win.com/web-root/restricted/information/get-game-list.aspx',
       {
-        CompanyKey: 'F1BAFEB7FE4B40E6864D4FF74F861E87',
-        ServerId: '207.148.116.51',
+        CompanyKey: 'D9062110D42341F9B2BDFC852A5D45AF',
+        ServerId: 'YY-demoanduat',
         GpId: GpId
       },
       {
@@ -517,7 +517,7 @@ router.post('/withdraw-game', async (req, res) => {
       return res.status(400).json({ message: 'Chưa đăng nhập' })
     }
 
-    const code = 'W2025' + Math.floor(Math.random() * 999999999999999)
+    const code = 'W2026' + Math.floor(Math.random() * 999999999999999)
     const userId = userData.id
     const username = removeVietnameseAccents(userData.username)
     const response = await axios.post(
@@ -527,8 +527,8 @@ router.post('/withdraw-game', async (req, res) => {
         txnId: code,
         IsFullAmount: true,
         Amount: 0,
-        CompanyKey: 'F1BAFEB7FE4B40E6864D4FF74F861E87',
-        ServerId: 'YY-production'
+        CompanyKey: 'D9062110D42341F9B2BDFC852A5D45AF',
+        ServerId: 'YY-demoanduat'
       },
       {
         headers: {
